@@ -10,7 +10,7 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.synaptropic.2eksper
-      flutter: stable
+      flutter: 3.41.4
       cocoapods: default
     cache:
       cache_paths:
