@@ -1,4 +1,4 @@
-package com.example.eksper_mobile
+package com.synaptropic.twoeksper
 
 import android.app.Activity
 import android.content.ClipData
@@ -19,7 +19,7 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.2eksper.mobile/pdf_file"
+            "com.synaptropic.twoeksper/pdf_file"
         ).setMethodCallHandler { call, result ->
             val bytes = call.argument<ByteArray>("bytes")
             val filename = File(

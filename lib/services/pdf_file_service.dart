@@ -6,7 +6,7 @@ import 'package:printing/printing.dart';
 class PdfFileService {
   const PdfFileService._();
 
-  static const _channel = MethodChannel('com.2eksper.mobile/pdf_file');
+  static const _channel = MethodChannel('com.synaptropic.twoeksper/pdf_file');
 
   static Future<bool> savePdf({
     required Uint8List bytes,
