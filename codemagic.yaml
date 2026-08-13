@@ -1,0 +1,63 @@
+workflows:
+  ios-testflight:
+    name: iOS TestFlight
+    max_build_duration: 60
+    integrations:
+      app_store_connect: codemagic-app-store
+    environment:
+      groups:
+        - appstore_credentials
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: $BUNDLE_ID
+      flutter: stable
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - ~/.pub-cache
+        - ~/Library/Caches/CocoaPods
+    scripts:
+      - name: Validate required App Store variables
+        script: |
+          set -e
+          if [ -z "$BUNDLE_ID" ]; then
+            echo "Missing BUNDLE_ID. Add it in Codemagic > Environment variables."
+            exit 1
+          fi
+          if [ -z "$APP_STORE_APPLE_ID" ]; then
+            echo "Missing APP_STORE_APPLE_ID. Add it in Codemagic > Environment variables."
+            exit 1
+          fi
+      - name: Sync bundle identifier for iOS targets
+        script: |
+          set -e
+          sed -i '' "s/com.example.eksperMobile.RunnerTests/${BUNDLE_ID}.RunnerTests/g" ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' "s/com.example.eksperMobile/${BUNDLE_ID}/g" ios/Runner.xcodeproj/project.pbxproj
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Build signed IPA
+        script: |
+          set -e
+          LATEST_BUILD_NUMBER="$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)"
+          if ! [[ "$LATEST_BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+            LATEST_BUILD_NUMBER=0
+          fi
+          BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+          echo "Using App Store build number: $BUILD_NUMBER"
+          flutter build ipa --release --build-number="$BUILD_NUMBER"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
