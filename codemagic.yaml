@@ -44,7 +44,10 @@ workflows:
           fi
           BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
           echo "Using App Store build number: $BUILD_NUMBER"
-          flutter build ipa --release --build-number="$BUILD_NUMBER"
+          flutter build ipa --release \
+            --build-number="$BUILD_NUMBER" \
+            --export-options-plist=/Users/builder/export_options.plist
+          ls -la build/ios/ipa
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
